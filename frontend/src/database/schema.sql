@@ -1,0 +1,245 @@
+-- -- Supabase Database Schema for VoteLink
+-- -- Run these SQL commands in your Supabase SQL Editor
+
+-- -- Create voter_records table for official voter data
+-- CREATE TABLE IF NOT EXISTS voter_records (
+--     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+--     voter_id VARCHAR(20) UNIQUE NOT NULL,
+--     full_name VARCHAR(255) NOT NULL,
+--     father_name VARCHAR(255),
+--     date_of_birth DATE NOT NULL,
+--     gender CHAR(1) CHECK (gender IN ('M', 'F', 'T')) NOT NULL,
+--     constituency VARCHAR(255) NOT NULL,
+--     state VARCHAR(255) NOT NULL,
+--     district VARCHAR(255) NOT NULL,
+--     polling_station VARCHAR(255),
+--     card_serial VARCHAR(50),
+--     is_active BOOLEAN DEFAULT true,
+--     verified_at TIMESTAMP WITH TIME ZONE,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+--     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+-- );
+
+-- -- Create aadhaar_records table (mock for demo - real integration would use UIDAI)
+-- CREATE TABLE IF NOT EXISTS aadhaar_records (
+--     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+--     aadhaar_number VARCHAR(12) UNIQUE NOT NULL,
+--     full_name VARCHAR(255) NOT NULL,
+--     date_of_birth DATE NOT NULL,
+--     gender CHAR(1) CHECK (gender IN ('M', 'F', 'T')) NOT NULL,
+--     address TEXT,
+--     pincode VARCHAR(6),
+--     state VARCHAR(255) NOT NULL,
+--     mobile_number VARCHAR(15),
+--     is_verified BOOLEAN DEFAULT true,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- );
+
+-- -- Create voters table (updated with face recognition)
+-- CREATE TABLE IF NOT EXISTS voters (
+--     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+--     voter_id VARCHAR(20) UNIQUE NOT NULL,
+--     email VARCHAR(255) UNIQUE NOT NULL,
+--     mobile VARCHAR(20) UNIQUE NOT NULL,
+--     full_name VARCHAR(255) NOT NULL,
+--     constituency VARCHAR(255) NOT NULL,
+--     state VARCHAR(255) NOT NULL,
+--     district VARCHAR(255) NOT NULL,
+--     is_verified BOOLEAN DEFAULT false,
+--     has_voted BOOLEAN DEFAULT false,
+--     voter_record_id UUID REFERENCES voter_records(id),
+--     aadhaar_record_id UUID REFERENCES aadhaar_records(id),
+--     verification_method VARCHAR(50), -- 'voter_id', 'aadhaar', 'both', 'face'
+--     verification_confidence INTEGER DEFAULT 0,
+--     face_descriptor TEXT, -- Encrypted face recognition descriptor (JSON)
+--     face_image_url TEXT, -- Encrypted URL to stored face image
+--     face_captured_at TIMESTAMP WITH TIME ZONE,
+--     face_verified BOOLEAN DEFAULT false,
+--     face_match_confidence INTEGER DEFAULT 0,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+--     last_login TIMESTAMP WITH TIME ZONE,
+--     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+-- );
+
+-- -- Create verification_logs table
+-- CREATE TABLE IF NOT EXISTS verification_logs (
+--     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+--     voter_id UUID REFERENCES voters(id),
+--     verification_type VARCHAR(50) NOT NULL, -- 'voter_id', 'aadhaar', 'face_capture', 'face_match'
+--     verification_status VARCHAR(20) NOT NULL, -- 'success', 'failed', 'pending'
+--     confidence_score INTEGER DEFAULT 0,
+--     error_message TEXT,
+--     verification_details JSONB,
+--     face_match_distance DECIMAL(10, 6), -- Euclidean distance for face matching
+--     ip_address INET,
+--     user_agent TEXT,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- );
+
+-- -- Create votes table for storing actual votes
+-- CREATE TABLE IF NOT EXISTS votes (
+--     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+--     voter_id UUID REFERENCES voters(id) ON DELETE CASCADE,
+--     party_id VARCHAR(50) NOT NULL,
+--     party_name VARCHAR(255) NOT NULL,
+--     constituency VARCHAR(255) NOT NULL,
+--     state VARCHAR(255) NOT NULL,
+--     vote_timestamp TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+--     vote_hash VARCHAR(255) UNIQUE NOT NULL, -- For blockchain verification
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- );
+
+-- -- Create elections table
+-- CREATE TABLE IF NOT EXISTS elections (
+--     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+--     election_name VARCHAR(255) NOT NULL,
+--     election_type VARCHAR(100) NOT NULL, -- 'general', 'state', 'local'
+--     start_date TIMESTAMP WITH TIME ZONE NOT NULL,
+--     end_date TIMESTAMP WITH TIME ZONE NOT NULL,
+--     constituencies TEXT[], -- Array of constituencies participating
+--     is_active BOOLEAN DEFAULT false,
+--     created_by VARCHAR(255) NOT NULL,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- );
+
+-- -- Create constituencies table
+-- CREATE TABLE IF NOT EXISTS constituencies (
+--     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+--     constituency_name VARCHAR(255) UNIQUE NOT NULL,
+--     state VARCHAR(255) NOT NULL,
+--     district VARCHAR(255) NOT NULL,
+--     total_voters INTEGER DEFAULT 0,
+--     polling_stations INTEGER DEFAULT 1,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- );
+
+-- -- Create parties table
+-- CREATE TABLE IF NOT EXISTS parties (
+--     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+--     party_id VARCHAR(50) UNIQUE NOT NULL,
+--     party_name VARCHAR(255) NOT NULL,
+--     party_symbol VARCHAR(255),
+--     party_color VARCHAR(7), -- Hex color code
+--     is_active BOOLEAN DEFAULT true,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- );
+
+-- -- Create audit_logs table for security tracking
+-- CREATE TABLE IF NOT EXISTS audit_logs (
+--     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+--     user_type VARCHAR(50) NOT NULL, -- 'voter', 'admin'
+--     user_id VARCHAR(255) NOT NULL,
+--     action VARCHAR(255) NOT NULL,
+--     details JSONB,
+--     ip_address INET,
+--     user_agent TEXT,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- );
+
+-- -- Add indexes for better performance
+-- CREATE INDEX IF NOT EXISTS idx_voters_voter_id ON voters(voter_id);
+-- CREATE INDEX IF NOT EXISTS idx_voters_email ON voters(email);
+-- CREATE INDEX IF NOT EXISTS idx_voters_mobile ON voters(mobile);
+-- CREATE INDEX IF NOT EXISTS idx_voters_constituency ON voters(constituency);
+-- CREATE INDEX IF NOT EXISTS idx_votes_voter_id ON votes(voter_id);
+-- CREATE INDEX IF NOT EXISTS idx_votes_constituency ON votes(constituency);
+-- CREATE INDEX IF NOT EXISTS idx_votes_timestamp ON votes(vote_timestamp);
+
+-- -- Row Level Security (RLS) Policies
+-- ALTER TABLE voters ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE votes ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE elections ENABLE ROW LEVEL SECURITY;
+
+-- -- Voters can only see their own data
+-- CREATE POLICY "Voters can view own data" ON voters
+--     FOR SELECT USING (auth.jwt() ->> 'email' = email);
+
+-- -- Votes are only visible to the voter who cast them
+-- CREATE POLICY "Voters can view own votes" ON votes
+--     FOR SELECT USING (
+--         voter_id IN (
+--             SELECT id FROM voters WHERE email = auth.jwt() ->> 'email'
+--         )
+--     );
+
+-- -- Only authenticated users can view active elections
+-- CREATE POLICY "View active elections" ON elections
+--     FOR SELECT USING (is_active = true);
+
+-- -- Insert sample data
+-- INSERT INTO constituencies (constituency_name, state, district, total_voters, polling_stations) VALUES
+-- ('Mumbai North', 'Maharashtra', 'Mumbai', 2500000, 450),
+-- ('Delhi Central', 'Delhi', 'Central Delhi', 1800000, 320),
+-- ('Bangalore South', 'Karnataka', 'Bangalore Urban', 2200000, 380),
+-- ('Chennai Central', 'Tamil Nadu', 'Chennai', 1900000, 340),
+-- ('Kolkata North', 'West Bengal', 'Kolkata', 1600000, 290);
+
+-- INSERT INTO parties (party_id, party_name, party_symbol, party_color, is_active) VALUES
+-- ('BJP', 'Bharatiya Janata Party', '🪷', '#FF9933', true),
+-- ('INC', 'Indian National Congress', '✋', '#19AAED', true),
+-- ('AAP', 'Aam Aadmi Party', '🧹', '#0066CC', true),
+-- ('TMC', 'All India Trinamool Congress', '🌸', '#20B2AA', true),
+-- ('DMK', 'Dravida Munnetra Kazhagam', '☀️', '#FF0000', true),
+-- ('NOTA', 'None of the Above', '❌', '#808080', true);
+
+-- -- Insert sample voter records
+-- INSERT INTO voter_records (voter_id, full_name, father_name, date_of_birth, gender, constituency, state, district, polling_station, card_serial, is_active, verified_at) VALUES
+-- ('VTR2025001', 'John Doe', 'Robert Doe', '1990-05-15', 'M', 'Mumbai North', 'Maharashtra', 'Mumbai', 'Govt. School No. 123', 'MH0123456789', true, NOW()),
+-- ('VTR2025002', 'Priya Sharma', 'Raj Sharma', '1988-09-22', 'F', 'Delhi Central', 'Delhi', 'Central Delhi', 'DTC School No. 45', 'DL0987654321', true, NOW()),
+-- ('VTR2025003', 'Raj Kumar', 'Mohan Kumar', '1985-12-08', 'M', 'Bangalore South', 'Karnataka', 'Bangalore Urban', 'Corporation School No. 78', 'KA0456789123', true, NOW()),
+-- ('VTR2025004', 'Anita Singh', 'Vikram Singh', '1992-03-18', 'F', 'Chennai Central', 'Tamil Nadu', 'Chennai', 'Municipality School No. 34', 'TN0234567890', true, NOW()),
+-- ('VTR2025005', 'Ravi Patel', 'Bharat Patel', '1987-07-25', 'M', 'Ahmedabad East', 'Gujarat', 'Ahmedabad', 'Primary School No. 56', 'GJ0345678901', true, NOW());
+
+-- -- Insert sample Aadhaar records
+-- INSERT INTO aadhaar_records (aadhaar_number, full_name, date_of_birth, gender, address, pincode, state, mobile_number, is_verified) VALUES
+-- ('123456789012', 'John Doe', '1990-05-15', 'M', '123, ABC Street, Bandra West, Mumbai, Maharashtra', '400050', 'Maharashtra', '+919876543210', true),
+-- ('987654321098', 'Priya Sharma', '1988-09-22', 'F', '456, XYZ Colony, Connaught Place, Delhi', '110001', 'Delhi', '+919876543211', true),
+-- ('456789123045', 'Raj Kumar', '1985-12-08', 'M', '789, PQR Layout, Koramangala, Bangalore, Karnataka', '560034', 'Karnataka', '+919876543212', true),
+-- ('234567890123', 'Anita Singh', '1992-03-18', 'F', '321, LMN Street, T. Nagar, Chennai, Tamil Nadu', '600017', 'Tamil Nadu', '+919876543213', true),
+-- ('345678901234', 'Ravi Patel', '1987-07-25', 'M', '654, RST Society, Satellite, Ahmedabad, Gujarat', '380015', 'Gujarat', '+919876543214', true);
+
+-- -- Insert sample voters (updated with verification references)
+-- INSERT INTO voters (voter_id, email, mobile, full_name, constituency, state, district, is_verified, has_voted, voter_record_id, aadhaar_record_id, verification_method, verification_confidence) VALUES
+-- ('VTR2025001', 'john.doe@email.com', '+919876543210', 'John Doe', 'Mumbai North', 'Maharashtra', 'Mumbai', true, false, 
+--   (SELECT id FROM voter_records WHERE voter_id = 'VTR2025001'), 
+--   (SELECT id FROM aadhaar_records WHERE aadhaar_number = '123456789012'), 
+--   'both', 95),
+-- ('VTR2025002', 'priya.sharma@email.com', '+919876543211', 'Priya Sharma', 'Delhi Central', 'Delhi', 'Central Delhi', true, false,
+--   (SELECT id FROM voter_records WHERE voter_id = 'VTR2025002'),
+--   (SELECT id FROM aadhaar_records WHERE aadhaar_number = '987654321098'),
+--   'both', 95),
+-- ('VTR2025003', 'raj.kumar@email.com', '+919876543212', 'Raj Kumar', 'Bangalore South', 'Karnataka', 'Bangalore Urban', true, false,
+--   (SELECT id FROM voter_records WHERE voter_id = 'VTR2025003'),
+--   (SELECT id FROM aadhaar_records WHERE aadhaar_number = '456789123045'),
+--   'both', 95),
+-- ('VTR2025004', 'admin@votelink.gov', '+919876543213', 'Admin User', 'Mumbai North', 'Maharashtra', 'Mumbai', true, false, NULL, NULL, 'admin', 100),
+-- ('VTR2025005', 'demo-admin@votelink.gov', '+919876543214', 'Demo Admin', 'Delhi Central', 'Delhi', 'Central Delhi', true, false, NULL, NULL, 'admin', 100);
+
+-- -- Create a function to update the updated_at column
+-- CREATE OR REPLACE FUNCTION update_updated_at_column()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--     NEW.updated_at = timezone('utc'::text, now());
+--     RETURN NEW;
+-- END;
+-- $$ language 'plpgsql';
+
+-- -- Create triggers for updating timestamps
+-- CREATE TRIGGER update_voters_updated_at BEFORE UPDATE ON voters
+--     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- -- Create a view for voting statistics
+-- CREATE OR REPLACE VIEW voting_statistics AS
+-- SELECT 
+--     c.constituency_name,
+--     c.state,
+--     c.total_voters,
+--     COUNT(v.id) as registered_voters,
+--     COUNT(CASE WHEN v.has_voted = true THEN 1 END) as votes_cast,
+--     ROUND(
+--         (COUNT(CASE WHEN v.has_voted = true THEN 1 END)::float / COUNT(v.id)::float) * 100, 2
+--     ) as turnout_percentage
+-- FROM constituencies c
+-- LEFT JOIN voters v ON c.constituency_name = v.constituency
+-- GROUP BY c.constituency_name, c.state, c.total_voters
+-- ORDER BY c.state, c.constituency_name;

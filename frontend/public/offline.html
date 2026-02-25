@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoteLink - Offline</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 30px;
+      background: linear-gradient(135deg, #f97316 0%, #22c55e 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    .icon svg {
+      width: 60px;
+      height: 60px;
+      stroke: white;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #1f2937;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+
+    p {
+      font-size: 16px;
+      color: #6b7280;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #fef3c7;
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-size: 14px;
+      color: #92400e;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      background: #f59e0b;
+      border-radius: 50%;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    button {
+      background: linear-gradient(135deg, #f97316 0%, #22c55e 100%);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .tips {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    .tips h3 {
+      font-size: 18px;
+      color: #1f2937;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    .tips ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .tips li {
+      padding: 8px 0;
+      color: #6b7280;
+      font-size: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .tips li::before {
+      content: "✓";
+      color: #22c55e;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 30px 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .icon {
+        width: 100px;
+        height: 100px;
+      }
+
+      .icon svg {
+        width: 50px;
+        height: 50px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+    </div>
+
+    <div class="status">
+      <span class="status-dot"></span>
+      You are offline
+    </div>
+
+    <h1>No Internet Connection</h1>
+    <p>
+      VoteLink requires an active internet connection for secure biometric authentication and voting.
+      Please check your connection and try again.
+    </p>
+
+    <button onclick="window.location.reload()">Try Again</button>
+
+    <div class="tips">
+      <h3>Troubleshooting Tips:</h3>
+      <ul>
+        <li>Check if your WiFi or mobile data is enabled</li>
+        <li>Try moving to an area with better signal</li>
+        <li>Restart your router if using WiFi</li>
+        <li>Disable airplane mode if it's on</li>
+        <li>Check if other websites are accessible</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Automatically reload when connection is restored
+    window.addEventListener('online', () => {
+      console.log('Connection restored');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    });
+
+    // Update status in real-time
+    function updateStatus() {
+      const status = document.querySelector('.status');
+      if (navigator.onLine) {
+        status.innerHTML = '<span style="background: #22c55e;" class="status-dot"></span> Back online';
+        status.style.background = '#d1fae5';
+        status.style.color = '#065f46';
+      }
+    }
+
+    window.addEventListener('online', updateStatus);
+    setInterval(updateStatus, 5000);
+  </script>
+</body>
+</html>
